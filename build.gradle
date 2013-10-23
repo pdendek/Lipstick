@@ -6,6 +6,9 @@ ext.githubProjectName = "Lipstick"
 buildscript {
     repositories {
         mavenCentral()
+	maven {
+		url 'https://repository.cloudera.com/artifactory/cloudera-repos/'
+	}
     }
 
     dependencies {
@@ -20,6 +23,9 @@ buildscript {
 allprojects {
     repositories {
         mavenCentral()
+	maven {
+		url 'https://repository.cloudera.com/artifactory/cloudera-repos/'
+	}
     }
     group = 'com.netflix.lipstick'
 }
@@ -140,22 +146,23 @@ project(':lipstick-console') {
 
         for (l in libs) {
             if (project.hasProperty('withoutDependencies')) {
-                compile(l)
+                compile(l) 
             } else {
-                includeInJar(l)
+                includeInJar(l) 
             }
         }
 
         if(project.hasProperty('withoutPig') || project.hasProperty('withoutDependencies')) {
             println "building jar without Pig"
-            compile('org.apache.pig:pig:0.11.1') {
+            compile('org.apache.pig:pig:0.11.0') {
                 exclude module: 'hsqld'
                 exclude module: 'jetty'
                 exclude module: 'jsp-api-2.1'
                 exclude module: 'servlet-api-2.5'
             }
         } else {
-            includeInJar('org.apache.pig:pig:0.11.1') {
+            println "building jar with Pig"
+	    includeInJar('org.apache.pig:pig:0.11.0')  {
                 exclude module: 'hsqld'
                 exclude module: 'jetty'
                 exclude module: 'jsp-api-2.1'
@@ -165,9 +172,32 @@ project(':lipstick-console') {
 
         if(project.hasProperty('withHadoop')) {
             println "building jar with Hadoop"
-            includeInJar 'org.apache.hadoop:hadoop-core:' + (project.hasProperty('hadoopVersion') ? hadoopVersion : '1.1.0')
+            includeInJar('org.apache.hadoop:hadoop-common:' + (project.hasProperty('hadoopVersion') ? hadoopVersion : '2.0.0-cdh4.3.0')) {
+                exclude module: 'hsqld'
+                exclude module: 'jetty'
+                exclude module: 'jsp-api-2.1'
+                exclude module: 'servlet-api-2.5'
+            }
+            includeInJar('org.apache.hadoop:hadoop-core:' + (project.hasProperty('hadoopVersion') ? hadoopVersion : '2.0.0-mr1-cdh4.3.0')) {
+                exclude module: 'hsqld'
+                exclude module: 'jetty'
+                exclude module: 'jsp-api-2.1'
+                exclude module: 'servlet-api-2.5'
+            }
         } else {
-            compile 'org.apache.hadoop:hadoop-core:' + (project.hasProperty('hadoopVersion') ? hadoopVersion : '1.1.0')
+            println "building jar without Hadoop"
+            compile('org.apache.hadoop:hadoop-common:' + (project.hasProperty('hadoopVersion') ? hadoopVersion : '2.0.0-cdh4.3.0')){
+                exclude module: 'hsqld'
+                exclude module: 'jetty'
+                exclude module: 'jsp-api-2.1'
+                exclude module: 'servlet-api-2.5'
+            }
+            compile('org.apache.hadoop:hadoop-core:' + (project.hasProperty('hadoopVersion') ? hadoopVersion : '2.0.0-mr1-cdh4.3.0')){
+                exclude module: 'hsqld'
+                exclude module: 'jetty'
+                exclude module: 'jsp-api-2.1'
+                exclude module: 'servlet-api-2.5'
+            }
         }
 
         compile 'org.hibernate:hibernate-entitymanager:3.6.0.Final'
